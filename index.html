@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>เครื่องรดน้ำต้นไม้อัตโนมัติ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;800&family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* เลย์เอาต์: แถบฮีโร่สีเขียวเข้มพร้อมตัวจำลองการรดน้ำที่ทำงานจริง แล้วไล่ลงเป็นหัวข้อเหมือนบอร์ดโครงงาน */
+:root{
+  --bg:#F3F8F1; --surface:#FFFFFF; --soft:#E3F1E4; --waterSoft:#DCEFF8;
+  --ink:#17362A; --muted:#56705F; --line:#D2E3D4;
+  --leaf:#2E8B57; --deep:#1D5C3A; --water:#1683C0; --soil:#8A5A3B; --dry:#B5652E; --sun:#F2B632;
+  --hero:#18513A; --heroInk:#FFFFFF; --heroSub:#BDE8C8; --heroMuted:#8FD3EE;
+  --f-display:'Kanit',system-ui,sans-serif; --f-body:'Sarabun',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1A14; --surface:#16251C; --soft:#1C3125; --waterSoft:#14303F;
+    --ink:#E3F0E6; --muted:#97B3A0; --line:#294033;
+    --leaf:#5DBE84; --deep:#8FD8AC; --water:#5BB8EA; --soil:#A57452; --dry:#E08A50; --sun:#F2C14E;
+    --hero:#123B2A; --heroInk:#FFFFFF; --heroSub:#BDE8C8; --heroMuted:#8FD3EE;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1A14; --surface:#16251C; --soft:#1C3125; --waterSoft:#14303F;
+  --ink:#E3F0E6; --muted:#97B3A0; --line:#294033;
+  --leaf:#5DBE84; --deep:#8FD8AC; --water:#5BB8EA; --soil:#A57452; --dry:#E08A50; --sun:#F2C14E;
+  --hero:#123B2A; --heroInk:#FFFFFF; --heroSub:#BDE8C8; --heroMuted:#8FD3EE;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.25}
+p{margin:0}
+.mono{font-family:var(--f-mono);letter-spacing:.06em}
+
+/* ---------- ฮีโร่ ---------- */
+.hero{background:var(--hero);color:var(--heroInk);position:relative;overflow:hidden}
+.hero .wrap{padding-block:28px 96px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:center}
+.topnav{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--f-display);font-size:14px;grid-column:1/-1;margin-bottom:8px}
+.topnav a{color:var(--heroSub);text-decoration:none;padding:2px 0;border-bottom:1px solid transparent}
+.topnav a:hover{border-bottom-color:var(--heroSub)}
+.topnav a:focus-visible{outline:2px solid var(--heroMuted);outline-offset:3px;border-radius:2px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--heroMuted);margin-bottom:12px}
+.hero h1{font-weight:800;font-size:clamp(36px,5.4vw,64px);letter-spacing:-.5px;line-height:1.12}
+.hero .sub{font-family:var(--f-display);font-weight:600;font-size:clamp(18px,2.3vw,26px);color:var(--heroSub);margin-top:10px}
+.hero .lede{color:#D8EBDD;max-width:46ch;margin-top:18px;font-size:16.5px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chip{font-family:var(--f-display);font-size:13px;font-weight:500;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.12);color:#fff}
+.college{margin-top:26px;font-size:14px;color:#CFE8D6}
+.wave{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:70px;display:block}
+
+/* ---------- ตัวจำลอง ---------- */
+.sim{background:var(--surface);color:var(--ink);border-radius:22px;padding:18px 18px 16px;box-shadow:0 20px 50px rgba(0,0,0,.25);min-width:0}
+.sim-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}
+.sim-head h2{font-size:17px;font-weight:600;color:var(--deep)}
+.live{font-family:var(--f-mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--leaf);box-shadow:0 0 0 0 var(--leaf);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,139,87,.5)}70%{box-shadow:0 0 0 7px rgba(46,139,87,0)}100%{box-shadow:0 0 0 0 rgba(46,139,87,0)}}
+.sim-body{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;align-items:center}
+.plant{width:150px;height:170px;display:block}
+.readout .big{font-family:var(--f-display);font-weight:800;font-size:46px;line-height:1;font-variant-numeric:tabular-nums;color:var(--water)}
+.readout .lbl{font-size:13px;color:var(--muted)}
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.mini div{background:var(--soft);border-radius:10px;padding:6px 10px}
+.mini b{display:block;font-family:var(--f-display);font-size:17px;font-variant-numeric:tabular-nums}
+.mini span{font-size:12px;color:var(--muted)}
+.meter{margin-top:14px}
+.bar{position:relative;height:12px;border-radius:6px;background:linear-gradient(90deg,#D9B98F 0%,#E9E3B8 40%,#9FD3EC 70%,#4FA7D9 100%)}
+.band{position:absolute;top:-3px;bottom:-3px;left:40%;width:30%;border:2px solid var(--leaf);border-radius:5px}
+.needle{position:absolute;top:-6px;width:3px;height:24px;background:var(--ink);border-radius:2px;transform:translateX(-50%);transition:left .2s linear}
+.scale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:6px;font-family:var(--f-mono)}
+.status{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:14px}
+.pill{font-family:var(--f-display);font-size:13px;font-weight:600;padding:4px 12px;border-radius:999px;background:var(--soft);color:var(--deep)}
+.pill.on{background:var(--water);color:#fff}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--f-display);font-size:14px;font-weight:600;border:0;border-radius:999px;padding:8px 16px;cursor:pointer;background:var(--water);color:#fff}
+.btn.ghost{background:transparent;color:var(--deep);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn[aria-pressed="true"].ghost{box-shadow:inset 0 0 0 1.5px var(--leaf);color:var(--leaf)}
+.btn:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+.drip circle{opacity:0}
+.pumping .drip circle{animation:fall .9s linear infinite}
+.pumping .drip circle:nth-child(2){animation-delay:.3s}
+.pumping .drip circle:nth-child(3){animation-delay:.6s}
+@keyframes fall{0%{opacity:0;transform:translateY(0)}15%{opacity:1}100%{opacity:0;transform:translateY(40px)}}
+.leaves{transform-origin:100px 118px;transition:transform .6s ease}
+
+/* ---------- หัวข้อ ---------- */
+section{padding-block:64px 8px}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:22px}
+.sec-head h2{font-size:clamp(26px,3.2vw,36px);font-weight:800;color:var(--deep)}
+.sec-head .tag{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;color:var(--water)}
+.lead{max-width:62ch;font-size:17px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
+.problems{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:20px}
+.problems div{background:var(--waterSoft);border-radius:12px;padding:12px;font-family:var(--f-display);font-weight:500;display:flex;gap:10px;align-items:center}
+.ico{flex:none;width:40px;height:40px;border-radius:50%;background:var(--surface);display:grid;place-items:center}
+.ico svg{width:24px;height:24px}
+.goals{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.goals li{display:flex;gap:14px;align-items:center;background:var(--soft);border-radius:12px;padding:12px 14px}
+.num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--leaf);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:800}
+.benefits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.benefits div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+.benefits .ico{margin:0 auto 8px;width:54px;height:54px;background:var(--waterSoft)}
+.benefits .ico svg{width:30px;height:30px}
+.benefits h3{font-size:18px;color:var(--deep)}
+.benefits p{font-size:14px;color:var(--muted)}
+
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;position:relative}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 14px;text-align:center;position:relative}
+.step .ico{width:64px;height:64px;margin:0 auto 10px;background:var(--soft)}
+.step .ico svg{width:36px;height:36px}
+.step .k{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.1em}
+.step h3{font-size:19px;color:var(--deep);margin-top:2px}
+.step p{font-size:14px;color:var(--muted);margin-top:4px}
+.step:not(:last-child)::after{content:"";position:absolute;right:-12px;top:50%;width:10px;height:10px;border-top:2px solid var(--leaf);border-right:2px solid var(--leaf);transform:translateY(-50%) rotate(45deg)}
+
+.rule{margin-top:26px}
+.rule .bar{height:18px;border-radius:9px}
+.rule .band{border-width:3px}
+.marks{position:relative;height:40px;margin-top:6px;font-family:var(--f-display);font-size:14px;font-weight:600}
+.marks span{position:absolute;transform:translateX(-50%);white-space:nowrap;text-align:center;line-height:1.3}
+.marks small{display:block;font-family:var(--f-body);font-weight:400;font-size:12px;color:var(--muted)}
+.cycle{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}
+.cycle div{border-radius:14px;padding:14px;background:var(--soft)}
+.cycle div.w{background:var(--waterSoft)}
+.cycle b{font-family:var(--f-display);font-size:16px;display:block}
+.cycle span{font-size:14px;color:var(--muted)}
+
+.parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.part{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.part .ico{width:52px;height:52px;background:var(--soft)}
+.part .ico svg{width:30px;height:30px}
+.part h3{font-size:17px;color:var(--deep)}
+.part p{font-size:14px;color:var(--muted)}
+.group-label{font-family:var(--f-display);font-weight:600;color:var(--muted);font-size:15px;margin:4px 0 10px}
+
+.app{display:grid;grid-template-columns:260px minmax(0,1fr);gap:36px;align-items:center}
+.phone{width:240px;max-width:100%;margin:0 auto;background:#16302A;border-radius:34px;padding:10px;box-shadow:0 14px 34px rgba(0,0,0,.18)}
+.screen{background:#F7FBF7;color:#17362A;border-radius:26px;padding:18px 16px 16px;min-height:430px}
+.screen .notch{width:70px;height:6px;background:#16302A;border-radius:3px;margin:0 auto 12px}
+.screen .row{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-display);font-weight:600;font-size:15px}
+.screen .online{font-size:11px;color:#56705F;font-family:var(--f-body);display:flex;align-items:center;gap:4px}
+.ring{display:block;margin:12px auto 0;width:150px;height:150px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.tiles div{background:#E3F1E4;border-radius:10px;padding:6px;text-align:center}
+.tiles b{display:block;font-family:var(--f-display);font-size:17px;font-variant-numeric:tabular-nums}
+.tiles span{font-size:11px;color:#56705F}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:13px;font-family:var(--f-display)}
+.sw{width:42px;height:24px;border-radius:12px;background:#C9D6CF;position:relative;border:0;cursor:pointer;padding:0}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .2s}
+.sw[aria-checked="true"]{background:#2E8B57}
+.sw[aria-checked="true"]::after{left:21px}
+.sw:focus-visible{outline:2px solid #1683C0;outline-offset:2px}
+.screen .btn{width:100%;margin-top:12px;background:#1683C0}
+.feats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;gap:12px}
+.feat .ico{width:46px;height:46px;background:var(--waterSoft)}
+.feat h3{font-size:17px;color:var(--deep)}
+.feat p{font-size:14px;color:var(--muted)}
+
+.team{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:26px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px}
+.names{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:8px}
+.names li{display:grid;grid-template-columns:24px max-content 1fr;column-gap:10px;align-items:baseline;background:var(--soft);border-radius:10px;padding:8px 12px;font-size:17px}
+.names .n{font-family:var(--f-display);font-weight:600;color:var(--leaf)}
+.names .fn{min-width:9.5em}
+.team h3{font-size:16px;color:var(--muted);font-weight:600}
+.facts{display:grid;gap:12px}
+.facts div{background:var(--waterSoft);border-radius:12px;padding:12px 14px}
+.facts span{font-size:13px;color:var(--muted);display:block}
+.facts b{font-family:var(--f-display);font-size:19px;color:var(--deep)}
+footer{padding-block:48px 40px;color:var(--muted);font-size:13px;text-align:center}
+
+@media(max-width:900px){
+  .hero .wrap{grid-template-columns:1fr;padding-block:22px 90px}
+  .two,.app,.team{grid-template-columns:1fr}
+  .flow,.cycle{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .step:nth-child(2)::after{display:none}
+  .parts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .sim-body{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .problems,.benefits,.parts,.feats{grid-template-columns:1fr}
+  .flow,.cycle{grid-template-columns:1fr}
+  .step::after{display:none}
+  .names li{grid-template-columns:20px 1fr;}
+  .names .ln{grid-column:2}
+  .names .fn{min-width:0}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .dot,.pumping .drip circle{animation:none}
+  .pumping .drip circle{opacity:1}
+  .needle,.leaves{transition:none}
+}
+</style>
+</head>
+<body>
+
+
+<!-- ไอคอนใช้ซ้ำ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 2.5C9 7 6 10.2 6 14a6 6 0 0 0 12 0c0-3.8-3-7-6-11.5z" fill="#1683C0"/><ellipse cx="9.6" cy="13" rx="1.1" ry="2.2" fill="#fff" opacity=".7"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="#2E8B57" stroke-width="2.4"/><path d="M12 7.5V12l3.2 2" fill="none" stroke="#2E8B57" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6" fill="#16302A"/><rect x="8" y="5" width="8" height="13.5" rx="1.2" fill="#DCEFF8"/><rect x="9.3" y="9.5" width="5.4" height="1.6" rx=".8" fill="#2E8B57"/><rect x="9.3" y="12.5" width="3.8" height="1.6" rx=".8" fill="#2E8B57"/></symbol>
+    <symbol id="i-probe" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="6" rx="1.4" fill="#1683C0"/><rect x="7" y="9" width="3" height="11" rx="1.4" fill="#C08A3C"/><rect x="14" y="9" width="3" height="11" rx="1.4" fill="#C08A3C"/><rect x="2" y="15" width="20" height="6" rx="2" fill="#B98B5E" opacity=".45"/></symbol>
+    <symbol id="i-chip" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" fill="#2A6B4A"/><rect x="5" y="8.5" width="8" height="7" rx="1" fill="#C9D6CF"/><g stroke="#9AA7A0" stroke-width="1"><path d="M4 6V3.5M7.5 6V3.5M11 6V3.5M14.5 6V3.5M18 6V3.5M4 18v2.5M7.5 18v2.5M11 18v2.5M14.5 18v2.5M18 18v2.5"/></g><circle cx="17.5" cy="12" r="1.3" fill="#58E07A"/></symbol>
+    <symbol id="i-thermo" viewBox="0 0 24 24"><rect x="9.5" y="2.5" width="5" height="13" rx="2.5" fill="#fff" stroke="#56705F" stroke-width="1.2"/><circle cx="12" cy="17.5" r="4" fill="#E0664A"/><rect x="11" y="7" width="2" height="9" rx="1" fill="#E0664A"/><rect x="3" y="19" width="18" height="3.5" rx="1.5" fill="#B98B5E" opacity=".45"/></symbol>
+    <symbol id="i-relay" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="#2B78C2"/><text x="12" y="14" text-anchor="middle" font-size="5" font-family="IBM Plex Mono, monospace" fill="#fff">RELAY</text><circle cx="18" cy="8" r="1.2" fill="#58E07A"/></symbol>
+    <symbol id="i-pump" viewBox="0 0 24 24"><circle cx="10" cy="13" r="7" fill="#3D4B44"/><circle cx="10" cy="13" r="3.2" fill="#6E7D75"/><rect x="14" y="4.5" width="7" height="3.6" rx="1" fill="#3D4B44"/><path d="M19.5 14c-1.4 2-2.3 3.2-2.3 4.4a2.3 2.3 0 0 0 4.6 0c0-1.2-.9-2.4-2.3-4.4z" fill="#1683C0"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 16a8 8 0 0 1 16 0" fill="none" stroke="#2E8B57" stroke-width="2.4" stroke-linecap="round"/><path d="M12 16l4-5" stroke="#2E8B57" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 1.5h-15z" fill="#2E8B57"/><circle cx="12" cy="20.5" r="1.8" fill="#2E8B57"/></symbol>
+    <symbol id="i-wilt" viewBox="0 0 24 24"><path d="M12 21v-7c0-3 2-4 5-4" fill="none" stroke="#8C7A3E" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="18" cy="12.5" rx="2.2" ry="4" transform="rotate(30 18 12.5)" fill="#C9B45A"/><ellipse cx="9" cy="15" rx="2" ry="3.6" transform="rotate(-50 9 15)" fill="#B59B45"/></symbol>
+    <symbol id="i-flood" viewBox="0 0 24 24"><path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2v6H2z" fill="#1683C0" opacity=".7"/><path d="M12 2.5C10 5.5 8 7.6 8 10a4 4 0 0 0 8 0c0-2.4-2-4.5-4-7.5z" fill="#1683C0"/></symbol>
+  </defs>
+</svg>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <nav class="topnav" aria-label="หัวข้อในหน้า">
+      <a href="#why">ที่มา</a><a href="#goals">วัตถุประสงค์</a><a href="#how">การทำงาน</a><a href="#rule">หลักการ</a><a href="#parts">อุปกรณ์</a><a href="#app">แอปพลิเคชัน</a><a href="#team">ผู้จัดทำ</a>
+    </nav>
+    <div>
+      <p class="eyebrow">SMART GREENHOUSE · IoT PROJECT</p>
+      <h1>เครื่องรดน้ำต้นไม้อัตโนมัติ</h1>
+      <p class="sub">และแอปพลิเคชันควบคุมโรงเรือนอัจฉริยะ</p>
+      <p class="lede">เครื่องวัดความชื้นในดินแล้วเปิดปั๊มรดน้ำเองเมื่อดินแห้ง ปิดเองเมื่อชื้นพอดี และส่งค่าขึ้นแอปให้ดูและสั่งงานได้จากมือถือ</p>
+      <div class="chips"><span class="chip">NodeMCU ESP8266</span><span class="chip">เซนเซอร์ความชื้นดิน</span><span class="chip">เซนเซอร์อุณหภูมิดิน</span><span class="chip">แอปมือถือ</span></div>
+      <p class="college">วิทยาลัยเทคโนโลยีบริหารธุรกิจกาญจนบุรี · สาขาวิชาเทคโนโลยีธุรกิจดิจิทัล · ปีการศึกษา 2569</p>
+    </div>
+
+    <div class="sim" id="sim" aria-label="ตัวจำลองการทำงานของเครื่อง">
+      <div class="sim-head">
+        <h2>ลองดูเครื่องทำงาน</h2>
+        <span class="live"><span class="dot"></span><span id="clock">06:00</span></span>
+      </div>
+      <div class="sim-body">
+        <svg class="plant" id="plant" viewBox="0 0 200 220" role="img" aria-label="กระถางต้นไม้พร้อมท่อน้ำหยดและเซนเซอร์">
+          <path d="M40 30 H118 Q126 30 126 38 V48" fill="none" stroke="#5BB8EA" stroke-width="6" stroke-linecap="round"/>
+          <g class="drip" fill="#1683C0"><circle cx="126" cy="58" r="4"/><circle cx="126" cy="58" r="3.4"/><circle cx="126" cy="58" r="3"/></g>
+          <g class="leaves" id="leaves">
+            <path d="M100 150 Q98 120 100 92" fill="none" stroke="#1D5C3A" stroke-width="4" stroke-linecap="round"/>
+            <ellipse cx="86" cy="128" rx="8" ry="17" transform="rotate(-50 86 128)" fill="#5DB86A"/>
+            <ellipse cx="114" cy="120" rx="8" ry="17" transform="rotate(50 114 120)" fill="#2E8B57"/>
+            <ellipse cx="88" cy="104" rx="7" ry="15" transform="rotate(-35 88 104)" fill="#2E8B57"/>
+            <ellipse cx="112" cy="98" rx="7" ry="14" transform="rotate(30 112 98)" fill="#5DB86A"/>
+            <ellipse cx="100" cy="84" rx="7" ry="13" fill="#2E8B57"/>
+          </g>
+          <rect x="56" y="146" width="88" height="12" rx="3" fill="#A9552F"/>
+          <ellipse id="soil" cx="100" cy="148" rx="40" ry="5" fill="#5A3E2B"/>
+          <path d="M60 158 H140 L132 210 H68 Z" fill="#C2683D"/>
+          <rect x="128" y="118" width="14" height="10" rx="2" fill="#1683C0"/>
+          <rect x="130" y="128" width="3" height="22" fill="#C08A3C"/><rect x="137" y="128" width="3" height="22" fill="#C08A3C"/>
+        </svg>
+        <div class="readout">
+          <div class="big"><span id="mval">62</span>%</div>
+          <div class="lbl">ความชื้นในดิน</div>
+          <div class="mini">
+            <div><b id="tval">27.0°C</b><span>อุณหภูมิดิน</span></div>
+            <div><b id="lastw">—</b><span>รดน้ำล่าสุด</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="meter" aria-hidden="true">
+        <div class="bar"><div class="band"></div><div class="needle" id="needle" style="left:62%"></div></div>
+        <div class="scale"><span>0%</span><span style="margin-left:22%">40%</span><span style="margin-right:12%">70%</span><span>100%</span></div>
+      </div>
+      <div class="status">
+        <span class="pill" id="pump" role="status">ปั๊มน้ำ: ปิด</span>
+        <div class="controls">
+          <button class="btn ghost" id="auto" aria-pressed="true">โหมดอัตโนมัติ</button>
+          <button class="btn" id="water">รดน้ำตอนนี้</button>
+        </div>
+      </div>
+      <p class="note">การจำลองเร่งเวลาให้ดูเร็วขึ้น ตัวเลขเป็นค่าตัวอย่าง ไม่ใช่ค่าที่วัดจากเครื่องจริง</p>
+    </div>
+  </div>
+  <svg class="wave" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 30 C 180 0 360 60 540 30 S 900 0 1080 30 S 1340 55 1440 28 V70 H0 Z" fill="#1683C0"/>
+    <path d="M0 48 C 200 24 380 70 600 46 S 980 22 1200 48 S 1380 62 1440 46 V70 H0 Z" fill="var(--bg)"/>
+  </svg>
+</header>
+
+<main class="wrap">
+  <section id="why">
+    <div class="sec-head"><h2>ที่มาและความสำคัญ</h2><span class="tag">WHY</span></div>
+    <div class="two">
+      <div>
+        <p class="lead">รดน้ำต้นไม้ด้วยมือต้องทำทุกวัน ถ้าลืมรดหรือรดมากเกินไป ต้นไม้ก็เสียหาย ผู้จัดทำจึงสร้างเครื่องที่วัดความชื้นในดินแล้วรดน้ำเองเมื่อดินแห้ง พร้อมแอปพลิเคชันสำหรับดูค่าและสั่งงานโรงเรือนผ่านมือถือ</p>
+        <div class="problems">
+          <div><span class="ico"><svg><use href="#i-wilt"/></svg></span>ลืมรดน้ำ</div>
+          <div><span class="ico"><svg><use href="#i-flood"/></svg></span>รดมากเกินไป</div>
+          <div><span class="ico"><svg><use href="#i-clock"/></svg></span>เสียเวลาทุกวัน</div>
+        </div>
+      </div>
+      <div class="card" aria-label="เปรียบเทียบก่อนและหลังใช้เครื่อง">
+        <svg viewBox="0 0 320 170" role="img" aria-label="ต้นไม้ดินแห้งใบเหี่ยว เทียบกับต้นไม้ที่รดอัตโนมัติใบเขียว" style="width:100%;height:auto;display:block">
+          <circle cx="26" cy="24" r="12" fill="var(--sun)"/>
+          <g transform="translate(80 140)">
+            <path d="M0 -40 Q4 -55 18 -56" fill="none" stroke="#8C7A3E" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="18" cy="-52" rx="6" ry="12" transform="rotate(110 18 -52)" fill="#C9B45A"/>
+            <ellipse cx="-10" cy="-48" rx="5" ry="11" transform="rotate(-120 -10 -48)" fill="#B59B45"/>
+            <rect x="-30" y="-44" width="60" height="9" rx="2" fill="#A9552F"/><rect x="-26" y="-46" width="52" height="3" fill="#B98B5E"/>
+            <path d="M-26 -35 H26 L20 0 H-20 Z" fill="#C2683D"/>
+          </g>
+          <path d="M140 92 h24 v-8 l16 14 -16 14 v-8 h-24z" fill="var(--leaf)"/>
+          <g transform="translate(240 140)">
+            <path d="M0 -40 Q-2 -70 0 -92" fill="none" stroke="#1D5C3A" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="-12" cy="-60" rx="6" ry="13" transform="rotate(-50 -12 -60)" fill="#5DB86A"/>
+            <ellipse cx="12" cy="-68" rx="6" ry="13" transform="rotate(50 12 -68)" fill="#2E8B57"/>
+            <ellipse cx="0" cy="-94" rx="6" ry="11" fill="#2E8B57"/>
+            <rect x="-30" y="-44" width="60" height="9" rx="2" fill="#A9552F"/><rect x="-26" y="-46" width="52" height="3" fill="#4A3526"/>
+            <path d="M-26 -35 H26 L20 0 H-20 Z" fill="#C2683D"/>
+            <path d="M-20 -116c-2 3-4 5-4 7a4 4 0 0 0 8 0c0-2-2-4-4-7z" fill="#1683C0"/>
+            <path d="M18 -110c-2 3-3 4-3 6a3 3 0 0 0 6 0c0-2-1-3-3-6z" fill="#1683C0"/>
+          </g>
+          <text x="80" y="160" text-anchor="middle" font-family="Kanit" font-size="13" font-weight="600" fill="var(--dry)">ดินแห้ง · รดด้วยมือ</text>
+          <text x="240" y="160" text-anchor="middle" font-family="Kanit" font-size="13" font-weight="600" fill="var(--water)">ชื้นพอดี · รดอัตโนมัติ</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section id="goals">
+    <div class="sec-head"><h2>วัตถุประสงค์และประโยชน์</h2><span class="tag">GOALS</span></div>
+    <div class="two">
+      <ol class="goals">
+        <li><span class="num">1</span>สร้างเครื่องรดน้ำต้นไม้ที่ทำงานเองตามความชื้นในดิน</li>
+        <li><span class="num">2</span>พัฒนาแอปพลิเคชันสำหรับดูค่าเซนเซอร์และควบคุมโรงเรือนผ่านมือถือ</li>
+        <li><span class="num">3</span>ลดปริมาณน้ำและเวลาที่ใช้ดูแลต้นไม้</li>
+      </ol>
+      <div class="benefits">
+        <div><span class="ico"><svg><use href="#i-drop"/></svg></span><h3>ประหยัดน้ำ</h3><p>รดเฉพาะตอนดินแห้ง</p></div>
+        <div><span class="ico"><svg><use href="#i-clock"/></svg></span><h3>ประหยัดเวลา</h3><p>ไม่ต้องรดเองทุกวัน</p></div>
+        <div><span class="ico"><svg><use href="#i-phone"/></svg></span><h3>ดูแลได้ทุกที่</h3><p>สั่งงานผ่านมือถือ</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="sec-head"><h2>ระบบทำงานอย่างไร</h2><span class="tag">FLOW</span></div>
+    <div class="flow">
+      <div class="step"><span class="ico"><svg><use href="#i-probe"/></svg></span><span class="k">1 · วัดค่า</span><h3>เซนเซอร์</h3><p>วัดความชื้นและอุณหภูมิในดิน</p></div>
+      <div class="step"><span class="ico"><svg><use href="#i-chip"/></svg></span><span class="k">2 · ประมวลผล</span><h3>NodeMCU</h3><p>อ่านค่าแล้วตัดสินใจเปิดหรือปิดปั๊ม</p></div>
+      <div class="step"><span class="ico"><svg><use href="#i-pump"/></svg></span><span class="k">3 · สั่งงาน</span><h3>ปั๊มน้ำ</h3><p>รีเลย์เปิดปั๊ม ส่งน้ำเข้าท่อน้ำหยด</p></div>
+      <div class="step"><span class="ico"><svg><use href="#i-phone"/></svg></span><span class="k">4 · แสดงผล</span><h3>แอปพลิเคชัน</h3><p>ดูค่าผ่าน Wi-Fi และสั่งรดน้ำได้</p></div>
+    </div>
+  </section>
+
+  <section id="rule">
+    <div class="sec-head"><h2>หลักการทำงาน</h2><span class="tag">40% → 70%</span></div>
+    <p class="lead">เครื่องจะรักษาความชื้นในดินให้อยู่ในช่วงที่พอดี เข็มบนแถบด้านล่างขยับตามตัวจำลองด้านบน</p>
+    <div class="rule">
+      <div class="bar"><div class="band"></div><div class="needle" id="needle2" style="left:62%"></div></div>
+      <div class="marks">
+        <span style="left:4%">ดินแห้ง</span>
+        <span style="left:40%;color:var(--dry)">40%<small>เปิดปั๊ม</small></span>
+        <span style="left:55%;color:var(--leaf)">ช่วงพอดี</span>
+        <span style="left:70%;color:var(--water)">70%<small>ปิดปั๊ม</small></span>
+        <span style="left:95%">ดินชื้น</span>
+      </div>
+    </div>
+    <div class="cycle">
+      <div><b>1. วัดความชื้น</b><span>เซนเซอร์อ่านค่าตลอดเวลา</span></div>
+      <div class="w"><b>2. ต่ำกว่า 40%</b><span>NodeMCU สั่งเปิดปั๊มน้ำ</span></div>
+      <div class="w"><b>3. ถึง 70%</b><span>สั่งปิดปั๊มน้ำ</span></div>
+      <div><b>4. ส่งค่าขึ้นแอป</b><span>ดูได้ทันทีบนมือถือ</span></div>
+    </div>
+  </section>
+
+  <section id="parts">
+    <div class="sec-head"><h2>อุปกรณ์ที่ใช้</h2><span class="tag">HARDWARE</span></div>
+    <p class="group-label">ตรวจวัดและควบคุม</p>
+    <div class="parts">
+      <div class="part"><span class="ico"><svg><use href="#i-chip"/></svg></span><div><h3>NodeMCU ESP8266</h3><p>บอร์ดควบคุมหลัก มี Wi-Fi ในตัว</p></div></div>
+      <div class="part"><span class="ico"><svg><use href="#i-probe"/></svg></span><div><h3>เซนเซอร์ความชื้นดิน</h3><p>ปักลงดิน วัดปริมาณน้ำในดิน</p></div></div>
+      <div class="part"><span class="ico"><svg><use href="#i-thermo"/></svg></span><div><h3>เซนเซอร์อุณหภูมิดิน</h3><p>ปักลงดิน วัดอุณหภูมิในดิน</p></div></div>
+    </div>
+    <p class="group-label" style="margin-top:18px">สั่งงานและแสดงผล</p>
+    <div class="parts">
+      <div class="part"><span class="ico"><svg><use href="#i-relay"/></svg></span><div><h3>รีเลย์</h3><p>สวิตช์เปิด–ปิดปั๊มตามคำสั่งของ NodeMCU</p></div></div>
+      <div class="part"><span class="ico"><svg><use href="#i-pump"/></svg></span><div><h3>ปั๊มน้ำ 12V</h3><p>ดูดน้ำจากถังส่งเข้าท่อน้ำหยด</p></div></div>
+      <div class="part"><span class="ico"><svg><use href="#i-phone"/></svg></span><div><h3>แอปพลิเคชัน</h3><p>ดูค่าเซนเซอร์และสั่งงานจากมือถือ</p></div></div>
+    </div>
+  </section>
+
+  <section id="app">
+    <div class="sec-head"><h2>แอปพลิเคชันควบคุมโรงเรือน</h2><span class="tag">MOBILE APP</span></div>
+    <div class="app">
+      <div class="phone" aria-label="หน้าจอแอปตัวอย่าง">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="row">โรงเรือน A <span class="online"><span class="dot"></span>ออนไลน์</span></div>
+          <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#DCEFF8" stroke-width="12" stroke-dasharray="216.8 289" transform="rotate(135 60 60)" stroke-linecap="round"/>
+            <circle id="arc" cx="60" cy="60" r="46" fill="none" stroke="#1683C0" stroke-width="12" stroke-dasharray="134 289" transform="rotate(135 60 60)" stroke-linecap="round"/>
+            <text x="60" y="64" text-anchor="middle" font-family="Kanit" font-weight="800" font-size="26" fill="#17362A"><tspan id="appm">62</tspan>%</text>
+            <text x="60" y="82" text-anchor="middle" font-family="Sarabun" font-size="10" fill="#56705F">ความชื้นในดิน</text>
+          </svg>
+          <div class="tiles">
+            <div><b id="appt">27.0°C</b><span>อุณหภูมิในดิน</span></div>
+            <div><b id="applast">—</b><span>รดน้ำล่าสุด</span></div>
+          </div>
+          <div class="toggle-row">ปั๊มน้ำ · อัตโนมัติ <button class="sw" id="appauto" role="switch" aria-checked="true" aria-label="โหมดอัตโนมัติ"></button></div>
+          <button class="btn" id="appwater">รดน้ำตอนนี้</button>
+          <p style="font-size:11px;color:#56705F;text-align:center;margin-top:8px">หน้าจอตัวอย่าง · กดได้จริง</p>
+        </div>
+      </div>
+      <div class="feats">
+        <div class="feat"><span class="ico"><svg><use href="#i-gauge"/></svg></span><div><h3>ดูค่าแบบเรียลไทม์</h3><p>ความชื้นและอุณหภูมิในดินของโรงเรือน</p></div></div>
+        <div class="feat"><span class="ico"><svg><use href="#i-drop"/></svg></span><div><h3>สั่งรดน้ำจากมือถือ</h3><p>เปิด–ปิดปั๊มน้ำได้จากทุกที่ที่มีอินเทอร์เน็ต</p></div></div>
+        <div class="feat"><span class="ico"><svg><use href="#i-clock"/></svg></span><div><h3>โหมดอัตโนมัติ</h3><p>ตั้งเกณฑ์ความชื้นและตั้งเวลารดน้ำล่วงหน้า</p></div></div>
+        <div class="feat"><span class="ico"><svg><use href="#i-bell"/></svg></span><div><h3>แจ้งเตือน</h3><p>เตือนเมื่อดินแห้งหรืออุณหภูมิดินสูงผิดปกติ</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="team">
+    <div class="sec-head"><h2>ผู้จัดทำ</h2><span class="tag">TEAM</span></div>
+    <div class="team">
+      <div>
+        <h3>รายชื่อผู้จัดทำ</h3>
+        <ol class="names">
+          <li><span class="n">1</span><span class="fn">นายนราธิปบุญ</span><span class="ln">บุญธรรม</span></li>
+          <li><span class="n">2</span><span class="fn">นางสาวพิมพ์พร</span><span class="ln">เทศถัน</span></li>
+          <li><span class="n">3</span><span class="fn">นายสิงหา</span><span class="ln">แซะตุ</span></li>
+          <li><span class="n">4</span><span class="fn">นายณัฐภัทร</span><span class="ln">แก้วพริ้ง</span></li>
+        </ol>
+        <h3 style="margin-top:18px">อาจารย์ที่ปรึกษา</h3>
+        <ol class="names">
+          <li><span class="n"></span><span class="fn">อาจารย์สุภาภรณ์</span><span class="ln">วารินสุพรรณ</span></li>
+        </ol>
+      </div>
+      <div class="facts">
+        <div><span>สถานศึกษา</span><b>วิทยาลัยเทคโนโลยีบริหารธุรกิจกาญจนบุรี</b></div>
+        <div><span>สาขาวิชา</span><b>เทคโนโลยีธุรกิจดิจิทัล</b></div>
+        <div><span>ปีการศึกษา</span><b>2569</b></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">โครงงานเครื่องรดน้ำต้นไม้อัตโนมัติ และแอปพลิเคชันควบคุมโรงเรือนอัจฉริยะ · <a href="#top" style="color:var(--leaf)">กลับขึ้นด้านบน</a></div>
+</footer>
+
+<script>
+(() => {
+  const ON = 40, OFF = 70;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const st = { m:62, t:27, auto:true, pump:false, minutes:6*60, last:null };
+  const $ = id => document.getElementById(id);
+  const fmt = mins => { const h = Math.floor(mins/60) % 24, m = Math.floor(mins % 60); return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); };
+
+  function setPump(on){
+    if (on && !st.pump) st.last = st.minutes;
+    st.pump = on;
+  }
+  function tick(){
+    st.minutes += 3;
+    const hour = (st.minutes/60) % 24;
+    // ดินแห้งเร็วขึ้นตอนกลางวัน
+    const sunny = hour > 9 && hour < 17 ? 1.6 : 0.7;
+    if (st.pump) st.m = Math.min(100, st.m + 1.4);
+    else st.m = Math.max(5, st.m - 0.22*sunny);
+    st.t = 26 + 3*Math.sin((hour - 9)/24*Math.PI*2) + (st.pump ? -0.4 : 0);
+    if (st.auto && !st.pump && st.m < ON) setPump(true);
+    if (st.pump && st.m >= OFF) setPump(false);
+    render();
+  }
+  function render(){
+    const m = Math.round(st.m);
+    $('mval').textContent = m; $('appm').textContent = m;
+    $('needle').style.left = st.m + '%'; $('needle2').style.left = st.m + '%';
+    $('arc').setAttribute('stroke-dasharray', (216.8*st.m/100).toFixed(1) + ' 289');
+    const tt = st.t.toFixed(1) + '°C'; $('tval').textContent = tt; $('appt').textContent = tt;
+    const lw = st.last == null ? '—' : fmt(st.last); $('lastw').textContent = lw; $('applast').textContent = lw;
+    $('clock').textContent = 'เวลาจำลอง ' + fmt(st.minutes);
+    const p = $('pump'); p.textContent = st.pump ? 'ปั๊มน้ำ: กำลังรด' : 'ปั๊มน้ำ: ปิด'; p.classList.toggle('on', st.pump);
+    $('plant').classList.toggle('pumping', st.pump);
+    // ดินเปลี่ยนสีตามความชื้น ใบตกเมื่อแห้ง
+    const dry = Math.max(0, Math.min(1, (45 - st.m)/30));
+    $('soil').setAttribute('fill', st.m > 50 ? '#4A3526' : st.m > 35 ? '#6B4A31' : '#9C7450');
+    $('leaves').style.transform = `scaleY(${1 - dry*0.12}) rotate(${dry*6}deg)`;
+    $('auto').setAttribute('aria-pressed', String(st.auto));
+    $('appauto').setAttribute('aria-checked', String(st.auto));
+    $('auto').textContent = st.auto ? 'โหมดอัตโนมัติ: เปิด' : 'โหมดอัตโนมัติ: ปิด';
+  }
+  const water = () => { setPump(true); render(); };
+  const toggleAuto = () => { st.auto = !st.auto; render(); };
+  $('water').addEventListener('click', water); $('appwater').addEventListener('click', water);
+  $('auto').addEventListener('click', toggleAuto); $('appauto').addEventListener('click', toggleAuto);
+  render();
+  setInterval(tick, reduce ? 400 : 200);
+})();
+</script>
+
+</body>
+</html>
